@@ -25,6 +25,13 @@ def func_speed(preset_speed):
         temperature = axis.settings.get("driver.temperature")
         return preset_speed
 
+def temperature():
+    with Connection.open_serial_port("/dev/tty.usbserial-A10JT7DA") as con:
+        device_list = con.detect_devices()
+        device = device_list[0]
+        axis = device.get_axis(1)
+        temperature = axis.settings.get("driver.temperature")
+        return temperature
 
 def func_position(preset_position):
     with Connection.open_serial_port("/dev/tty.usbserial-A10JT7DA") as con:

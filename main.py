@@ -49,14 +49,15 @@ class Scanning_Probe(QMainWindow):
         self.setLayout(layout)
         self.check_if_file_exist()
 
-        btn1 = QPushButton("Run the Osilla Measurement and Saved to File", self)
-        btn1.setGeometry(100, 150, 200, 100)
-        btn2 = QPushButton("Run the visualisation of real measurement", self)
-        btn2.setGeometry(100, 250, 200, 100)
+        btn1 = QPushButton("Measure to file", self)
+        btn1.setGeometry(100, 150, 200, 150)
+        self.btn2 = QPushButton("Online measurement!", self)
+        self.btn2.setEnabled(False)
+        self.btn2.setGeometry(100, 300, 200, 150)
         btn3 = QPushButton("Emergency stop button!!!", self)
-        btn3.setGeometry(100, 350, 200, 100)
+        btn3.setGeometry(100, 450, 200, 150)
         btn1.clicked.connect(self.osilla_run)
-        btn2.clicked.connect(self.zaber_run)
+        self.btn2.clicked.connect(self.zaber_run)
         btn3.clicked.connect(self.handleButton)
         #lcd.display(self.osilla_run())
         # Create textbox
@@ -91,27 +92,36 @@ class Scanning_Probe(QMainWindow):
         self.speed_input.setText("")
         from measurement_movement import func_speed
         func_speed(int(textboxValue))
-        self.position_button.setText("")
+        self.position_current()
+        #self.position_button.setText("")
 
 
     @pyqtSlot()
     def position_setter(self):
-        from measurement_movement import func2
+        from measurement_movement import func_position
         textboxValue = self.position_input.text()
+        if int(textboxValue)>=400:
+            self.btn2.setEnabled(True)
+
         QMessageBox.question(self, 'You have set the position', "Your position is: " + textboxValue + "mm", QMessageBox.Ok, QMessageBox.Ok)
 
         from measurement_movement import func_position
         func_position(int(textboxValue))
-        self.position_button.setText("")
+        position_verifier = int(textboxValue)
+        self.position_current()
+        return position_verifier
+
+        #self.position_button.setText("")
 
     def handleButton(self):
         '''This function allows me for getting the osilla to run'''
-        self.lcd.display(self.osilla_run())
+        sys.exit()
 
     def randomint(self):
         '''This is only test so I could update the PyQt display'''
         random = randint(2, 99)
         return random
+
     def check_if_file_exist(self):
 
         if os.path.exists('measurement.csv') == True:
@@ -120,8 +130,8 @@ class Scanning_Probe(QMainWindow):
             self.file.display(0)
 
     def position_current(self):
-        from measurement_movement import current_position
-        self.lcd.display(current_position())
+        from measurement_movement import temperature
+        self.lcd.display(temperature())
 
     def osilla_run(self):
         '''This is accessing the modules I have build and updates the status bar'''
@@ -131,10 +141,11 @@ class Scanning_Probe(QMainWindow):
         current_measure()
     def zaber_run(self):
         '''This is accessing the modules I have build and updates the status bar'''
-        from measurement_movement import func2
-        func2()
+        from file_displaying_online import visual as vis
         sender = self.sender()
         self.statusBar().showMessage(sender.text() + ' was pressed')
+        vis()
+        self.position_current()
 
 def main():
     '''I do not need much to run it in main, just passed 10 to Scanning probe for some tests but never use anything, also I am handling here some errors'''
