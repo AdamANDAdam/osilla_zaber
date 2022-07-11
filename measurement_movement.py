@@ -7,8 +7,9 @@ from zaber_motion.ascii import AllAxes
 from zaber_motion import MovementFailedException
 from threading import Thread
 import time
+from zaber.serial import AsciiSerial, AsciiDevice
 
-def func1(position):
+def func_speed(preset_speed):
     with Connection.open_serial_port("/dev/tty.usbserial-A10JT7DA") as con:
         device_list = con.detect_devices()
         device = device_list[0]
@@ -16,44 +17,51 @@ def func1(position):
         # axis.home()
         speed = axis.settings.get("maxspeed", Units.VELOCITY_MILLIMETRES_PER_SECOND)
         print("Max speed is", speed)
-        axis.settings.set("maxspeed", 40, Units.VELOCITY_MILLIMETRES_PER_SECOND)
+        axis.settings.set("maxspeed", preset_speed, Units.VELOCITY_MILLIMETRES_PER_SECOND)
 
         # axis.wait_until_idle()
         temperature = axis.settings.get("driver.temperature")
         print(f'Driver temperature {temperature}C')
-        print('###################################')
-        print('###################################')
-        print('###################################')
-        print('###################################')
         temperature = axis.settings.get("driver.temperature")
-        axis.move_absolute(position, Units.LENGTH_MILLIMETRES)
+        return preset_speed
 
 
-def func2():
+def func_position(preset_position):
+    with Connection.open_serial_port("/dev/tty.usbserial-A10JT7DA") as con:
+        device_list = con.detect_devices()
+        device = device_list[0]
+        axis = device.get_axis(1)
+        #axis.settings.set("maxspeed", preset_speed, Units.VELOCITY_MILLIMETRES_PER_SECOND)
+        axis.move_absolute(preset_position, Units.LENGTH_MILLIMETRES)
+
+def current_position():
+    from zaber.serial import AsciiSerial, AsciiDevice
+    with Connection.open_serial_port("/dev/tty.usbserial-A10JT7DA") as con:
+        device_list = con.detect_devices()
+        device = device_list[0]
+        axis = device.get_axis(1)
+
+        position = axis.get_position()
+        return position
+
+def measurement_function():
+    '''Here I am setting the Source_Meausure Unit and execute 100 current measurements @ 0.8 V'''
     with xtralien.Device("/dev/tty.usbmodem141201") as SMU:
+        #checking if the SMU is enabled (open the current/voltage source)
         SMU.smu1.set.enabled(True, response=0)
-        volt = []
-        curr = []
+        #setting the voltage - in myh case 0.8 V
         SMU.smu1.set.voltage(0.8, response=0)
-        for i in range(0,1000):
+        #Here I execute 100 measurements
+        for i in range(0,100):
             data = SMU.smu1.measurei()
             time.sleep(0.1)
             print(data*1000)
-            #print(voltage, current)
-
-
-
-
-
-
-
-
-
+        #when finished I turn off the current and voltage source
         SMU.smu1.set.enabled(False, response=0)
 def main():
-    func1(0)
-    func2()
+    '''Here it is only left because I was testing it'''
 
+    measurement_function()
 
 if __name__ == '__main__':
     main()

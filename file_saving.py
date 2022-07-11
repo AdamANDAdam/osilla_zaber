@@ -1,6 +1,6 @@
 #Here is the module for saving the data and displaying it later on
 
-from measurement_movement import func2 as osilla
+from measurement_movement import measurement_function as osilla
 
 outcome = osilla()
 outcome = outcome.tolist()

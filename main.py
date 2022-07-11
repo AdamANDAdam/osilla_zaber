@@ -1,15 +1,28 @@
-
+import os.path
 import sys
 from zaber_motion import Library
+import matplotlib
 # PREDEFINITIONS REQUIRED FOR STAGES
 Library.enable_device_db_store()
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QApplication
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QLCDNumber, QSlider,QVBoxLayout, QApplication)
+from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtWidgets import (QWidget, QLCDNumber, QLineEdit,QVBoxLayout, QApplication, QMessageBox, QLabel)
 from PyQt5.QtCore import QTime, QTimer
 ###TEST ONLY
 from random import randint
 ###TEST ONLY
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+matplotlib.use('Qt5Agg')
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+
+class MplCanvas(FigureCanvasQTAgg):
+
+    def __init__(self, parent=None, width=50, height=40, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
 
 class Scanning_Probe(QMainWindow):
     '''Here I am describbing how my window is being made and how all classes are built'''
@@ -20,25 +33,76 @@ class Scanning_Probe(QMainWindow):
 
     def initUI(self):
         '''Here I initialise all window and display'''
+        # sc = MplCanvas(self, width=50, height=40, dpi=100)
+        # sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
+        # sc.setFixedSize(300,300)
+        #
+        # #self.setCentralWidget(sc)
+
         self.lcd = QLCDNumber(self)
+        self.file = QLCDNumber(self)
         layout = QVBoxLayout()
         layout.addWidget(self.lcd)
+        self.lcd.setGeometry(300, 150, 250, 150)
+        layout.addWidget(self.file)
+        self.file.setGeometry(300, 450, 250, 150)
         self.setLayout(layout)
+        self.check_if_file_exist()
+
         btn1 = QPushButton("Run the Osilla Measurement", self)
-        btn1.setGeometry(100, 50, 200, 100)
+        btn1.setGeometry(100, 150, 200, 100)
         btn2 = QPushButton("Run the Zaber Movement", self)
-        btn2.setGeometry(100, 150, 200, 100)
+        btn2.setGeometry(100, 250, 200, 100)
         btn3 = QPushButton("Home position", self)
-        btn3.setGeometry(100, 250, 200, 100)
+        btn3.setGeometry(100, 350, 200, 100)
         btn1.clicked.connect(self.osilla_run)
         btn2.clicked.connect(self.zaber_run)
         btn3.clicked.connect(self.handleButton)
         #lcd.display(self.osilla_run())
-        self.lcd.setGeometry(300, 300, 250, 150)
+        # Create textbox
+        self.speed_input = QLineEdit(self)
+        self.speed_input.move(100, 5)
+        self.speed_input.resize(280, 40)
+
+        self.position_input = QLineEdit(self)
+        self.position_input.move(100, 45)
+        self.position_input.resize(280, 40)
+
+        # Create a button in the window
+        self.speed_button = QPushButton('Set speed', self)
+        self.speed_button.move(420, 5)
+        self.position_button = QPushButton('Set position', self)
+        self.position_button.move(420, 45)
+        self.position_current()
+
+        # connect button to function on_click
+        self.speed_button.clicked.connect(self.on_click)
+        self.position_button.clicked.connect(self.position_setter)
+
         self.statusBar()
-        self.setGeometry(300, 300, 650, 550)
+        self.setGeometry(300, 300, 950, 850)
         self.setWindowTitle('Scanning Probe Controller and Data Saver')
         self.show()
+#HERE I DEMONSTRATE HOW TO USE DECORATOR
+    @pyqtSlot()
+    def on_click(self):
+        textboxValue = self.speed_input.text()
+        QMessageBox.question(self, 'FOR SAFETY HOMING OF THE STAGE WILL BE PERFORMED', "Your speed is: " + textboxValue + "mm/s", QMessageBox.Ok, QMessageBox.Ok)
+        self.speed_input.setText("")
+        from measurement_movement import func_speed
+        func_speed(int(textboxValue))
+        self.position_button.setText("")
+
+
+    @pyqtSlot()
+    def position_setter(self):
+        from measurement_movement import func2
+        textboxValue = self.position_input.text()
+        QMessageBox.question(self, 'You have set the position', "Your position is: " + textboxValue + "mm", QMessageBox.Ok, QMessageBox.Ok)
+
+        from measurement_movement import func_position
+        func_position(int(textboxValue))
+        self.position_button.setText("")
 
     def handleButton(self):
         '''This function allows me for getting the osilla to run'''
@@ -48,15 +112,24 @@ class Scanning_Probe(QMainWindow):
         '''This is only test so I could update the PyQt display'''
         random = randint(2, 99)
         return random
+    def check_if_file_exist(self):
+
+        if os.path.exists('measurement.csv') == True:
+            self.file.display(1)
+        else:
+            self.file.display(0)
+
+    def position_current(self):
+        from measurement_movement import current_position
+        self.lcd.display(current_position())
 
     def osilla_run(self):
         '''This is accessing the modules I have build and updates the status bar'''
-        from measurement_movement import func1
+        from measurement_movement import measurement_function
         sender = self.sender()
         self.statusBar().showMessage(sender.text() + ' was pressed')
         position = float(input('Enter the desired position of the stage'))
-        func1(position)
-        return position
+        measurement_function()
     def zaber_run(self):
         '''This is accessing the modules I have build and updates the status bar'''
         from measurement_movement import func2
