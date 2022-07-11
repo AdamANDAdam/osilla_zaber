@@ -1,48 +1,52 @@
-import xtralien
-from zaber_motion import Library
-from zaber_motion.ascii import Connection
-from zaber_motion import Units
-from zaber_motion.binary import Device
-from zaber_motion.ascii import AllAxes
-from zaber_motion import MovementFailedException
-from threading import Thread
 
+import sys
+from zaber_motion import Library
 # PREDEFINITIONS
 Library.enable_device_db_store()
 
-
-def func1():
-    with Connection.open_serial_port("/dev/tty.usbserial-A10JT7DA") as con:
-        device_list = con.detect_devices()
-        device = device_list[0]
-        axis = device.get_axis(1)
-        # axis.home()
-        speed = axis.settings.get("maxspeed", Units.VELOCITY_MILLIMETRES_PER_SECOND)
-        print("Max speed is", speed)
-        axis.settings.set("maxspeed", 19, Units.VELOCITY_MILLIMETRES_PER_SECOND)
-
-        # axis.wait_until_idle()
-        temperature = axis.settings.get("driver.temperature")
-        print(f'Driver temperature {temperature}C')
-        print('###################################')
-        print('###################################')
-        print('###################################')
-        print('###################################')
-        temperature = axis.settings.get("driver.temperature")
-        axis.move_absolute(30, Units.LENGTH_MILLIMETRES)
+import sys
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QApplication
 
 
-def func2():
-    with xtralien.Device("/dev/tty.usbmodem145201") as SMU:
-        SMU.smu1.set.enabled(True, response=0)
-        for set_Vol in range(0, 10):
-            voltage, current = SMU.smu1.oneshot(set_Vol)[0]
-            print(f'{voltage}, {current}')
+class Scanning_Probe(QMainWindow):
 
-        SMU.smu1.set.voltage(0, response=0)
-        SMU.smu1.set.enabled(False, response=0)
+    def __init__(self):
+        super().__init__()
+
+        self.initUI()
+
+    def initUI(self):
+        btn1 = QPushButton("Run the Osilla Measurement", self)
+        btn1.setGeometry(100, 50, 200, 100)
+
+        btn2 = QPushButton("Run the Zaber Movement", self)
+        btn2.setGeometry(100, 250, 200, 100)
+
+        btn1.clicked.connect(self.osilla_run)
+        btn2.clicked.connect(self.zaber_run)
+
+        self.statusBar()
+
+        self.setGeometry(300, 300, 650, 550)
+        self.setWindowTitle('Scanning Probe Controller and Data Saver')
+        self.show()
+    def osilla_run(self):
+        from measurement_movement import func1
+        func1()
+    def zaber_run(self):
+        from measurement_movement import func2
+        func2()
+
+    def buttonClicked(self):
+        sender = self.sender()
+        self.statusBar().showMessage(sender.text() + ' was pressed')
+
+
+def main():
+    app = QApplication(sys.argv)
+    execute = Scanning_Probe()
+    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
-    Thread(target=func1).start()
-    Thread(target=func2).start()
+    main()
