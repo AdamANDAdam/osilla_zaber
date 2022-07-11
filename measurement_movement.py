@@ -7,7 +7,7 @@ from zaber_motion.ascii import AllAxes
 from zaber_motion import MovementFailedException
 from threading import Thread
 
-def func1():
+def func1(position):
     with Connection.open_serial_port("/dev/tty.usbserial-A10JT7DA") as con:
         device_list = con.detect_devices()
         device = device_list[0]
@@ -15,7 +15,7 @@ def func1():
         # axis.home()
         speed = axis.settings.get("maxspeed", Units.VELOCITY_MILLIMETRES_PER_SECOND)
         print("Max speed is", speed)
-        axis.settings.set("maxspeed", 19, Units.VELOCITY_MILLIMETRES_PER_SECOND)
+        axis.settings.set("maxspeed", 5, Units.VELOCITY_MILLIMETRES_PER_SECOND)
 
         # axis.wait_until_idle()
         temperature = axis.settings.get("driver.temperature")
@@ -25,7 +25,7 @@ def func1():
         print('###################################')
         print('###################################')
         temperature = axis.settings.get("driver.temperature")
-        axis.move_absolute(0, Units.LENGTH_MILLIMETRES)
+        axis.move_absolute(position, Units.LENGTH_MILLIMETRES)
 
 
 def func2():
@@ -39,10 +39,11 @@ def func2():
         SMU.smu1.set.enabled(False, response=0)
 
 def main():
-    func1()
+    func1(0)
     func2()
-main()
+
 
 if __name__ == '__main__':
-    Thread(target=func1).start()
-    Thread(target=func2).start()
+    main()
+    # Thread(target=func1).start()
+    # Thread(target=func2).start()
