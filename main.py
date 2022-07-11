@@ -23,6 +23,7 @@ class MplCanvas(FigureCanvasQTAgg):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
+        self.setWindowTitle("Adam Surmiak Python Course CODEME")
 
 class Scanning_Probe(QMainWindow):
     '''Here I am describbing how my window is being made and how all classes are built'''
@@ -43,12 +44,17 @@ class Scanning_Probe(QMainWindow):
         self.file = QLCDNumber(self)
         layout = QVBoxLayout()
         layout.addWidget(self.lcd)
-        self.lcd.setGeometry(300, 150, 250, 150)
+        self.lcd.setGeometry(550, 150, 250, 150)
         layout.addWidget(self.file)
-        self.file.setGeometry(300, 450, 250, 150)
+        self.file.setGeometry(300, 150, 250, 150)
         self.setLayout(layout)
         self.check_if_file_exist()
-
+        self.label1 = QLabel('CSV file exists?[0 - no, 1 yes]', self)
+        self.label1.setGeometry(300,80,200,100)
+        self.label2 = QLabel('Functions:', self)
+        self.label2.setGeometry(100,80,200,100)
+        self.label3 = QLabel('Motor current temperature:', self)
+        self.label3.setGeometry(550,80,200,100)
         btn1 = QPushButton("Measure to file", self)
         btn1.setGeometry(100, 150, 200, 150)
         self.btn2 = QPushButton("Online measurement!", self)
@@ -56,9 +62,14 @@ class Scanning_Probe(QMainWindow):
         self.btn2.setGeometry(100, 300, 200, 150)
         btn3 = QPushButton("Emergency stop button!!!", self)
         btn3.setGeometry(100, 450, 200, 150)
+        btn4 = QPushButton("Compare the data gathred", self)
+        btn4.setGeometry(100, 600, 200, 150)
+
+
         btn1.clicked.connect(self.osilla_run)
         self.btn2.clicked.connect(self.zaber_run)
         btn3.clicked.connect(self.handleButton)
+        btn4.clicked.connect(self.compare)
         #lcd.display(self.osilla_run())
         # Create textbox
         self.speed_input = QLineEdit(self)
@@ -112,6 +123,9 @@ class Scanning_Probe(QMainWindow):
         return position_verifier
 
         #self.position_button.setText("")
+    def compare(self):
+        from file_display import file_disp
+        file_disp()
 
     def handleButton(self):
         '''This function allows me for getting the osilla to run'''
