@@ -49,11 +49,11 @@ class Scanning_Probe(QMainWindow):
         self.setLayout(layout)
         self.check_if_file_exist()
 
-        btn1 = QPushButton("Run the Osilla Measurement", self)
+        btn1 = QPushButton("Run the Osilla Measurement and Saved to File", self)
         btn1.setGeometry(100, 150, 200, 100)
-        btn2 = QPushButton("Run the Zaber Movement", self)
+        btn2 = QPushButton("Run the visualisation of real measurement", self)
         btn2.setGeometry(100, 250, 200, 100)
-        btn3 = QPushButton("Home position", self)
+        btn3 = QPushButton("Emergency stop button!!!", self)
         btn3.setGeometry(100, 350, 200, 100)
         btn1.clicked.connect(self.osilla_run)
         btn2.clicked.connect(self.zaber_run)
@@ -125,11 +125,10 @@ class Scanning_Probe(QMainWindow):
 
     def osilla_run(self):
         '''This is accessing the modules I have build and updates the status bar'''
-        from measurement_movement import measurement_function
+        from file_saving import main as current_measure
         sender = self.sender()
         self.statusBar().showMessage(sender.text() + ' was pressed')
-        position = float(input('Enter the desired position of the stage'))
-        measurement_function()
+        current_measure()
     def zaber_run(self):
         '''This is accessing the modules I have build and updates the status bar'''
         from measurement_movement import func2

@@ -52,12 +52,27 @@ def measurement_function():
         #setting the voltage - in myh case 0.8 V
         SMU.smu1.set.voltage(0.8, response=0)
         #Here I execute 100 measurements
+        data_pass = []
         for i in range(0,100):
             data = SMU.smu1.measurei()
             time.sleep(0.1)
-            print(data*1000)
-        #when finished I turn off the current and voltage source
+            data_pass.append(data)
+        # when finished I turn off the current and voltage source
         SMU.smu1.set.enabled(False, response=0)
+        return data_pass
+def online_displaying():
+    with xtralien.Device("/dev/tty.usbmodem141201") as SMU:
+        #checking if the SMU is enabled (open the current/voltage source)
+        SMU.smu1.set.enabled(True, response=0)
+        #setting the voltage - in myh case 0.8 V
+        SMU.smu1.set.voltage(0.8, response=0)
+        #Here I execute 100 measurements
+        data = SMU.smu1.measurei()
+        time.sleep(0.1)
+        # when finished I turn off the current and voltage source
+        SMU.smu1.set.enabled(False, response=0)
+        return data
+
 def main():
     '''Here it is only left because I was testing it'''
 
