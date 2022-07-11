@@ -31,13 +31,21 @@ def func1(position):
 def func2():
     with xtralien.Device("/dev/tty.usbmodem141201") as SMU:
         SMU.smu1.set.enabled(True, response=0)
-        for set_Vol in range(0, 10):
-            voltage, current = SMU.smu1.oneshot(set_Vol)[0]
-            print(f'{voltage}, {current}')
-
+        volt = []
+        curr = []
         SMU.smu1.set.voltage(0, response=0)
-        SMU.smu1.set.enabled(False, response=0)
+        data = SMU.smu1.sweep(0.5,0.1,1.2)
+            #print(voltage, current)
+        return data
 
+
+
+
+
+
+
+
+        SMU.smu1.set.enabled(False, response=0)
 def main():
     func1(0)
     func2()
